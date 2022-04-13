@@ -24,8 +24,8 @@ function Nav() {
       />
       <img
         className="nav_avatar"
-        src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/366be133850498.56ba69ac36858.png"
-        alt="Netflix Logo"
+        src="https://cdn.iconscout.com/icon/free/png-256/user-1648810-1401302.png"
+        alt="User Profile"
       />
     </div>
   )

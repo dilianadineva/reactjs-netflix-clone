@@ -7,13 +7,14 @@ import "./Row.css";
 const base_url = "https://image.tmdb.org/t/p/original"
 
 function Row({ title, fetchUrl, isLargeRow }) {
+  console.log("fetchUrl: ", fetch);
   const [movies, setMovies] = useState([]);
   const [trailerUrl, setTrailerUrl] = useState("");
+  const [urlError, setUrlError] = useState(false)
 
   useEffect(() => {
 
     async function fetchData() {
-
       const request = await axios.get(fetchUrl);
       setMovies(request.data.results);
       return request;
@@ -29,17 +30,36 @@ function Row({ title, fetchUrl, isLargeRow }) {
     }
   }
 
+  async function fetchMovie(movie_id) {
+    const movie_request = await axios.get("/movie/"+movie_id+"?api_key=14045fe4e260107e4b484bdb96ba3183");
+    // setSomething(movie_request.data);
+    console.log("fetching movie data", movie_request.data)
+  }
+
   const handleClick = (movie) => {
-    // console.table(movie?.title)
-    if (trailerUrl) {
-      setTrailerUrl('')
+    if (trailerUrl && urlError === false) {
+      setTrailerUrl('') 
     } else {
-      movieTrailer(movie?.title || "")
+      console.log(movie.id);
+      movieTrailer(movie?.title || "") // the (|| "") part is for if the title is undefined
         .then(url => {
+          console.log("url: ", url);
+          if(!url){ //if url is null
+            setUrlError(true)
+            return
+          }
           const urlParams = new URLSearchParams(new URL(url).search);
           setTrailerUrl(urlParams.get('v'));
-        }).catch((error) => console.log(error));
+          setUrlError(false)
+        }).catch((error) => {
+          console.log("error! ", error)
+          setUrlError(true)
+        });
     }
+    if (movie?.id) {
+      fetchMovie(movie.id)
+    }
+
   }
 
   return (
@@ -52,11 +72,12 @@ function Row({ title, fetchUrl, isLargeRow }) {
             onClick={() => handleClick(movie)}
             className={`row_poster ${isLargeRow && "row_posterLarge"}`}
             src={`${base_url}${isLargeRow ? movie.poster_path : movie.backdrop_path}`}
-            alt={movie.name} />
+            alt={movie.title} />
         })}
       </div>
-      <div style={{ padding: "40px" }}>
+      <div style={{ padding: "40px" }} >
         {trailerUrl && <YouTube videoId={trailerUrl} opts={opts} />}
+        {urlError && <div className="url_error">No Trailer</div>}
       </div>
     </div>
   );
