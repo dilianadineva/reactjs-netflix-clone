@@ -12,8 +12,37 @@ function Row({ title, fetchUrl, isLargeRow }) {
   const [urlError, setUrlError] = useState(false);
 
   useEffect(() => {
+    console.log('useeffect');
+    
+    document.querySelectorAll('.row_posters').forEach((item) => {
+      // console.log('item', item);
+      item.addEventListener('wheel', (e) => {
+        // console.log('listener added');
+        handleScroll(e);
+      });
+    });
+    // return () => {
+    //   document.removeEventListener('wheel', handleScroll);
+    //   console.log("remove event listener")
+    // };
+  }, []);
+
+  function handleScroll(e) {
+    e.preventDefault();
+    let target = e.target;
+    var parent = target.parentElement;
+    let id = parent.id;
+    if (id) {
+      document.getElementById(id).scrollBy({
+        left: e.deltaY < 0 ? -300 : 300,
+      });
+    }
+    parent.removeEventListener('wheel', handleScroll);
+    // console.log('listener removed');
+  }
+
+  useEffect(() => {
     async function fetchData() {
-      // console.log("fetch url: ", fetchUrl)
       const request = await axios.get(fetchUrl);
       setMovies(request.data.results);
       return request;
@@ -40,7 +69,6 @@ function Row({ title, fetchUrl, isLargeRow }) {
     if (trailerUrl && urlError === false) {
       setTrailerUrl('');
     } else {
-      // console.log(movie.id);
       movieTrailer(movie?.title || '') // the (|| "") part is for if the title is undefined
         .then((url) => {
           if (!url) {
@@ -65,11 +93,12 @@ function Row({ title, fetchUrl, isLargeRow }) {
   return (
     <div className='row'>
       <h2>{title}</h2>
-      <div className='row_posters'>
+      <div className='row_posters' id={title}>
         {movies.map((movie) => {
           return (
             <img
               key={movie.id}
+              id={movie.id}
               onClick={() => handleClick(movie)}
               className={`row_poster ${isLargeRow && 'row_posterLarge'}`}
               src={`${base_url}${
